@@ -522,6 +522,34 @@ describe('_checkCredential', () => {
     error.message.should
       .contain('Credential has expired.');
   });
+
+  it('should reject if "credentialStatus" is not have id', () => {
+    const credential = {
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1'
+      ],
+      type: ['VerifiableCredential'],
+      issuer: 'did:example:issuer',
+      credentialSubject: {
+        id: 'did:example:subject',
+      },
+      credentialStatus: {
+        type: 'CredentialStatusList2017',
+      },
+    };
+
+    credential.issuer = 'did:example:12345';
+    // set expirationDate to an expired date.
+    credential.expirationDate = '2025-05-31T19:21:25Z';
+    let error;
+    try {
+      vc._checkCredential({credential});
+    } catch(e) {
+      error = e;
+    }
+
+    error.message.should.contain('"credentialStatus" must include an id.');
+  });
 });
 
 async function _generateCredential() {
